@@ -1,35 +1,21 @@
 package com.mobnetic.coinguardiandatamodule.tester;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 import android.app.Activity;
-import android.app.PendingIntent;
-import android.appwidget.AppWidgetManager;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ProgressBar;
-import android.widget.RemoteViews;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
-import android.support.v7.widget.Toolbar;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -54,7 +40,11 @@ import com.mobnetic.coinguardiandatamodule.tester.volley.CheckerVolleyMainReques
 import com.mobnetic.coinguardiandatamodule.tester.volley.generic.ResponseErrorListener;
 import com.mobnetic.coinguardiandatamodule.tester.volley.generic.ResponseListener;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+public class SettingActivity extends Activity {
 
     private RequestQueue requestQueue;
     private Spinner marketSpinner;
@@ -70,10 +60,12 @@ public class MainActivity extends AppCompatActivity {
 
     private CurrencyPairsMapHelper currencyPairsMapHelper;
 
+    String TAG = "MainActivity";
+
+
     ArrayList<String> listCu = new ArrayList<>();
     ArrayList<String> listMoi = new ArrayList<>();
     ArrayList<String> listCho = new ArrayList<>();
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,10 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
         requestQueue = HttpsHelper.newRequestQueue(this);
 
-        setContentView(R.layout.main_activity);
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.activity_setting);
 
         marketSpinner = (Spinner) findViewById(R.id.marketSpinner);
         currencySpinnersWrapper = findViewById(R.id.currencySpinnersWrapper);
@@ -97,7 +86,9 @@ public class MainActivity extends AppCompatActivity {
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         resultView = (TextView) findViewById(R.id.resultView);
 
+
         refreshMarketSpinner();
+
         Market market = getSelectedMarket();
         currencyPairsMapHelper = new CurrencyPairsMapHelper(MarketCurrencyPairsStore.getPairsForMarket(this, getSelectedMarket().key));
         refreshCurrencySpinners(market);
@@ -109,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         marketSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 final Market selectedMarket = getSelectedMarket();
-                currencyPairsMapHelper = new CurrencyPairsMapHelper(MarketCurrencyPairsStore.getPairsForMarket(MainActivity.this, selectedMarket.key));
+                currencyPairsMapHelper = new CurrencyPairsMapHelper(MarketCurrencyPairsStore.getPairsForMarket(SettingActivity.this, selectedMarket.key));
                 refreshCurrencySpinners(selectedMarket);
                 refreshFuturesContractTypeSpinner(selectedMarket);
             }
@@ -119,11 +110,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        dynamicCurrencyPairsInfoView.setOnClickListener(new View.OnClickListener() {
+        dynamicCurrencyPairsInfoView.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                new DynamicCurrencyPairsDialog(MainActivity.this, getSelectedMarket(), currencyPairsMapHelper) {
+                new DynamicCurrencyPairsDialog(SettingActivity.this, getSelectedMarket(), currencyPairsMapHelper) {
                     public void onPairsUpdated(Market market, CurrencyPairsMapHelper currencyPairsMapHelper) {
-                        MainActivity.this.currencyPairsMapHelper = currencyPairsMapHelper;
+                        SettingActivity.this.currencyPairsMapHelper = currencyPairsMapHelper;
                         refreshCurrencySpinners(market);
                     }
                 }.show();
@@ -143,6 +134,19 @@ public class MainActivity extends AppCompatActivity {
         getResultButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 getNewResult();
+            }
+        });
+
+        Button btnSave = (Button) findViewById(R.id.btn_save);
+        btnSave.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SharedPreferences sharedPreferences = getSharedPreferences("share", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("cho", marketSpinner.getSelectedItem().toString());
+                editor.putString("goc", currencyBaseSpinner.getSelectedItem().toString());
+                editor.putString("moi", currencyCounterSpinner.getSelectedItem().toString());
+                editor.commit();
             }
         });
     }
@@ -188,9 +192,11 @@ public class MainActivity extends AppCompatActivity {
         for (Market market : MarketsConfig.MARKETS.values()) {
             entries[i--] = market.name;
         }
+
         for (int j = 0; j < entries.length; j++) {
             listCho.add(entries[j] + "");
         }
+
         marketSpinner.setAdapter(new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_dropdown_item, entries));
     }
 
@@ -205,20 +211,25 @@ public class MainActivity extends AppCompatActivity {
         getResultButton.setVisibility(isCurrencyEmpty ? View.GONE : View.VISIBLE);
     }
 
+
+    // hieu repair
     private void refreshDynamicCurrencyPairsView(Market market) {
-        dynamicCurrencyPairsInfoView.setVisibility(market.getCurrencyPairsUrl(0) != null ? View.VISIBLE : View.GONE);
+//		dynamicCurrencyPairsInfoView.setVisibility(market.getCurrencyPairsUrl(0)!=null ? View.VISIBLE : View.GONE);
     }
 
     private void refreshCurrencyBaseSpinner(Market market) {
         final HashMap<String, CharSequence[]> currencyPairs = getProperCurrencyPairs(market);
         if (currencyPairs != null && currencyPairs.size() > 0) {
-            final CharSequence[] entries = new CharSequence[currencyPairs.size()];
+            final CharSequence[] entriescu = new CharSequence[currencyPairs.size()];
             int i = 0;
             for (String currency : currencyPairs.keySet()) {
-                entries[i++] = currency;
+                entriescu[i++] = currency;
+
                 listCu.add(currency + "");
             }
-            currencyBaseSpinner.setAdapter(new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_dropdown_item, entries));
+
+            Log.d(TAG, "cu : " + listCu.get(0));
+            currencyBaseSpinner.setAdapter(new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_dropdown_item, entriescu));
         } else {
             currencyBaseSpinner.setAdapter(null);
         }
@@ -233,6 +244,7 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < entriesmoi.length; i++) {
                 listMoi.add(entriesmoi[i] + "");
             }
+            Log.d(TAG, "moi : " + listMoi.get(0));
 
             currencyCounterSpinner.setAdapter(new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_dropdown_item, entriesmoi));
         } else {
@@ -294,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 if (TextUtils.isEmpty(errorMsg))
-                    errorMsg = CheckErrorsUtils.parseVolleyErrorMsg(MainActivity.this, error);
+                    errorMsg = CheckErrorsUtils.parseVolleyErrorMsg(SettingActivity.this, error);
 
                 handleNewResult(checkerInfo, null, url, requestHeaders, networkResponse, responseString, errorMsg, error);
             }
@@ -325,19 +337,20 @@ public class MainActivity extends AppCompatActivity {
         String base = currencyCounterSpinner.getSelectedItem().toString();
 
         String x = ssb + "";
-        String price1 = x.substring(6, x.indexOf(base)).trim();
-        price1 = price1.replace(",", ".");
+        String price = x.substring(6, x.indexOf(base)).trim();
+        price = price.replace(",", ".");
 
+        Log.d(TAG, "base : " + base);
+        Log.d(TAG, "vt : " + x.indexOf(base));
+        Log.d(TAG, "gia  : " + price);
 
         TextView txtCount = (TextView) findViewById(R.id.txt_count);
+        Log.d(TAG, "resultView : " + Double.valueOf(price));
 
 
 //		resultView.setText(ssb);
-        double z = Double.parseDouble(price1) * Double.parseDouble(txtCount.getText().toString());
-        Log.d("xxxx", "price : " + z);
-
+        double z = Double.parseDouble(price) * Double.parseDouble(txtCount.getText().toString());
         resultView.setText(String.format("%.10f", z));
-
     }
 
     private String createNewPriceLineIfNeeded(int textResId, double price, String currency) {
@@ -348,90 +361,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);//Menu Resource, Menu
-        return true;
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.setting:
-                Intent i = new Intent(MainActivity.this, SettingActivity.class);
-                startActivity(i);
-                return true;
-
-        }
-        return false;
-    }
-
-    String cho;
-    String goc;
-    String moi;
-
     public void oldvalue() {
         SharedPreferences sharedPreferences = getSharedPreferences("share", MODE_PRIVATE);
 
-        cho = sharedPreferences.getString("cho", "Kucoin");
-        goc = sharedPreferences.getString("goc", "ACT");
-        moi = sharedPreferences.getString("moi", "BTC");
+        String cho = sharedPreferences.getString("cho", "");
+        String goc = sharedPreferences.getString("goc", "");
+        String moi = sharedPreferences.getString("moi", "");
 
         currencyBaseSpinner.setSelection(listCu.indexOf(goc));
         currencyCounterSpinner.setSelection(listMoi.indexOf(moi));
         marketSpinner.setSelection(listCu.indexOf(cho));
 
     }
-
-
-    public void setDataWidget(String s) {
-
-        // Getting an instance of WidgetManager
-        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getApplicationContext());
-
-        // Instantiating the class RemoteViews with widget_layout
-        RemoteViews views = new RemoteViews(getApplicationContext().getPackageName(), R.layout.layout_widget);
-
-
-        // Setting the background color of the widget
-//        views.setTextViewText(R.id.txt_market, goc + " / " + moi);
-
-        views.setTextViewText(R.id.txt_market, goc + " / " + moi);
-        views.setTextViewText(R.id.txt_price, s + "");
-
-        Intent intent = new Intent(getApplicationContext(), MyReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-
-        views.setOnClickPendingIntent(R.id.imgbtn_refret, pendingIntent);
-
-        ComponentName thisWidget = new ComponentName(getApplication(), AppWidget.class);
-        //  Attach an on-click listener to the clock
-//        views.setOnClickPendingIntent(R.id.widget_aclock, pendingIntent);
-
-        // Tell the AppWidgetManager to perform an update on the app widget
-        appWidgetManager.updateAppWidget(thisWidget, views);
-
-
-    }
-
-    public static class MyReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d("zzzz", "receiver");
-
-
-            SharedPreferences sharedPreferences = context.getSharedPreferences("share", MODE_PRIVATE);
-
-            String cho = sharedPreferences.getString("cho", "Kucoin");
-            String goc = sharedPreferences.getString("goc", "ACT");
-            String moi = sharedPreferences.getString("moi", "BTC");
-
-
-        }
-    }
-
 }
