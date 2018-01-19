@@ -5,9 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/BitcoinChecker.iml" filepath="$PROJECT_DIR$/BitcoinChecker.iml" />
       <module fileurl="file://C:\Users\PlayGirl\Desktop\ource\BitcoinChecker\BitcoinCheckerGithub.iml" filepath="C:\Users\PlayGirl\Desktop\ource\BitcoinChecker\BitcoinCheckerGithub.iml" />
       <module fileurl="file://$PROJECT_DIR$/dataModule/dataModule.iml" filepath="$PROJECT_DIR$/dataModule/dataModule.iml" />
-      <module fileurl="file://C:\Users\PlayGirl\Desktop\ource\BitcoinChecker\dataModule\dataModule.iml" filepath="C:\Users\PlayGirl\Desktop\ource\BitcoinChecker\dataModule\dataModule.iml" />
       <module fileurl="file://$PROJECT_DIR$/dataModuleTester/dataModuleTester.iml" filepath="$PROJECT_DIR$/dataModuleTester/dataModuleTester.iml" />
-      <module fileurl="file://C:\Users\PlayGirl\Desktop\ource\BitcoinChecker\dataModuleTester\dataModuleTester.iml" filepath="C:\Users\PlayGirl\Desktop\ource\BitcoinChecker\dataModuleTester\dataModuleTester.iml" />
     </modules>
   </component>
 </project>

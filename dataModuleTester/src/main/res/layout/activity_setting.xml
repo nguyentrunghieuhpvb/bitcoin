@@ -81,11 +81,7 @@
                 android:src="@drawable/ic_action_info" />
         </LinearLayout>
 
-        <Spinner
-            android:id="@+id/futuresContractTypeSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:spinnerMode="dialog" />
+
 
         <Button
             android:id="@+id/getResultButton"

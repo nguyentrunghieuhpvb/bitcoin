@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
@@ -14,22 +13,25 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.Adapter;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.RemoteViews;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.support.v7.widget.Toolbar;
+import android.widget.Toast;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -44,29 +46,25 @@ import com.mobnetic.coinguardian.model.Ticker;
 import com.mobnetic.coinguardian.util.CurrencyPairsMapHelper;
 import com.mobnetic.coinguardian.util.FormatUtilsBase;
 import com.mobnetic.coinguardian.util.MarketsConfigUtils;
-import com.mobnetic.coinguardiandatamodule.tester.dialog.DynamicCurrencyPairsDialog;
 import com.mobnetic.coinguardiandatamodule.tester.util.CheckErrorsUtils;
 import com.mobnetic.coinguardiandatamodule.tester.util.HttpsHelper;
 import com.mobnetic.coinguardiandatamodule.tester.util.MarketCurrencyPairsStore;
 import com.mobnetic.coinguardiandatamodule.tester.volley.CheckerErrorParsedError;
 import com.mobnetic.coinguardiandatamodule.tester.volley.CheckerVolleyMainRequest;
 import com.mobnetic.coinguardiandatamodule.tester.volley.CheckerVolleyMainRequest.TickerWrapper;
+import com.mobnetic.coinguardiandatamodule.tester.volley.DynamicCurrencyPairsVolleyMainRequest;
 import com.mobnetic.coinguardiandatamodule.tester.volley.generic.ResponseErrorListener;
 import com.mobnetic.coinguardiandatamodule.tester.volley.generic.ResponseListener;
+
+import io.realm.Realm;
+import io.realm.RealmResults;
 
 public class MainActivity extends AppCompatActivity {
 
     private RequestQueue requestQueue;
-    private Spinner marketSpinner;
-    private View currencySpinnersWrapper;
-    private View dynamicCurrencyPairsWarningView;
-    private View dynamicCurrencyPairsInfoView;
-    private Spinner currencyBaseSpinner;
-    private Spinner currencyCounterSpinner;
-    private Spinner futuresContractTypeSpinner;
+
     private View getResultButton;
-    private ProgressBar progressBar;
-    private TextView resultView;
+
 
     private CurrencyPairsMapHelper currencyPairsMapHelper;
 
@@ -74,192 +72,182 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<String> listMoi = new ArrayList<>();
     ArrayList<String> listCho = new ArrayList<>();
 
+    Realm realm;
+
+    ArrayList<DataInfo> listFavo = new ArrayList<>();
+
+    boolean favoCheck = false;
+
+    TextView txtMarket, txtBase;
+    EditText edtCount;
+
+    TextView txtResult;
+    ProgressBar progressBar;
+    Button btnShowResult;
+    RecyclerView recy;
+    FavoAdapter favoAdapter;
+
+    ArrayList<String> listMarket = new ArrayList<>();
+
+    String goc = "", moi = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        requestQueue = HttpsHelper.newRequestQueue(this);
+//        requestQueue = HttpsHelper.newRequestQueue(this);
 
-        setContentView(R.layout.main_activity);
+        setContentView(R.layout.layout_convert);
 
+        inIt();
+        getListMarket();
+
+        setDataWidget(MainActivity.this);
+
+        Realm.init(this);
+
+        currencyPairsMapHelper = new CurrencyPairsMapHelper(MarketCurrencyPairsStore.getPairsForMarket(this, getSelectedMarket(txtMarket.getText().toString()).key));
+
+        realm = Realm.getDefaultInstance();
+
+        listFavo = getListFavo();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        marketSpinner = (Spinner) findViewById(R.id.marketSpinner);
-        currencySpinnersWrapper = findViewById(R.id.currencySpinnersWrapper);
-        dynamicCurrencyPairsWarningView = findViewById(R.id.dynamicCurrencyPairsWarningView);
-        dynamicCurrencyPairsInfoView = findViewById(R.id.dynamicCurrencyPairsInfoView);
-        currencyBaseSpinner = (Spinner) findViewById(R.id.currencyBaseSpinner);
-        currencyCounterSpinner = (Spinner) findViewById(R.id.currencyCounterSpinner);
-        futuresContractTypeSpinner = (Spinner) findViewById(R.id.futuresContractTypeSpinner);
-        getResultButton = findViewById(R.id.getResultButton);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        resultView = (TextView) findViewById(R.id.resultView);
+        favoAdapter = new FavoAdapter(listFavo, new FavoAdapter.onClick() {
+            @Override
+            public void onClick(final DataInfo dataInfo) {
+                Log.d("zzzz", "onclick");
 
-        refreshMarketSpinner();
-        Market market = getSelectedMarket();
-        currencyPairsMapHelper = new CurrencyPairsMapHelper(MarketCurrencyPairsStore.getPairsForMarket(this, getSelectedMarket().key));
-        refreshCurrencySpinners(market);
-        refreshFuturesContractTypeSpinner(market);
-        showResultView(true);
+                txtMarket.setText(dataInfo.getMarket());
 
-        oldvalue();
+                currencyPairsMapHelper = new CurrencyPairsMapHelper(MarketCurrencyPairsStore.getPairsForMarket(MainActivity.this, getSelectedMarket(txtMarket.getText().toString()).key));
 
-        marketSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
-            public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-                final Market selectedMarket = getSelectedMarket();
-                currencyPairsMapHelper = new CurrencyPairsMapHelper(MarketCurrencyPairsStore.getPairsForMarket(MainActivity.this, selectedMarket.key));
-                refreshCurrencySpinners(selectedMarket);
-                refreshFuturesContractTypeSpinner(selectedMarket);
+                goc = dataInfo.getGoc();
+                moi = dataInfo.getMoi();
+
+                txtBase.setText(goc + " / " + moi);
+
+                txtResult.setText("");
+
             }
+        });
+        favoAdapter.notifyDataSetChanged();
 
-            public void onNothingSelected(AdapterView<?> arg0) {
-                // do nothing
+        recy.setLayoutManager(new LinearLayoutManager(this));
+        recy.setAdapter(favoAdapter);
+
+
+        btnShowResult.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+//                getNewResult(false);
+
+                String count = edtCount.getText().toString().trim().replaceAll(",", ".");
+                try {
+                    final double tmp = Double.parseDouble(count);
+                    new GetPrice(getApplicationContext()) {
+
+                        @Override
+                        public void result(Double result) {
+                            txtResult.setText(String.format("%.10f", result * tmp));
+                        }
+                    }.getNewResult();
+
+
+                } catch (Exception e) {
+                    Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
-        dynamicCurrencyPairsInfoView.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                new DynamicCurrencyPairsDialog(MainActivity.this, getSelectedMarket(), currencyPairsMapHelper) {
-                    public void onPairsUpdated(Market market, CurrencyPairsMapHelper currencyPairsMapHelper) {
-                        MainActivity.this.currencyPairsMapHelper = currencyPairsMapHelper;
-                        refreshCurrencySpinners(market);
-                    }
-                }.show();
-            }
-        });
+//        getNewResult(true);
 
-        currencyBaseSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
-            public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-                refreshCurrencyCounterSpinner(getSelectedMarket());
-            }
+    }
 
-            public void onNothingSelected(AdapterView<?> arg0) {
-                // do nothing
-            }
-        });
+    private void inIt() {
+        txtMarket = (TextView) findViewById(R.id.txt_market);
+        txtBase = (TextView) findViewById(R.id.txt_base);
+        txtResult = (TextView) findViewById(R.id.txt_result);
+        btnShowResult = (Button) findViewById(R.id.btn_get_result);
+        recy = (RecyclerView) findViewById(R.id.recy_favo);
+        edtCount = (EditText) findViewById(R.id.edt_count);
 
-        getResultButton.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                getNewResult();
-            }
-        });
+
+        SharedPreferences preferences = getSharedPreferences("share", MODE_PRIVATE);
+        String market = preferences.getString("market", "Kucoin");
+        goc = preferences.getString("goc", "ACT");
+        moi = preferences.getString("moi", "BCH");
+
+        txtMarket.setText(market);
+        txtBase.setText(goc + " / " + moi);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        SharedPreferences preferences = getSharedPreferences("share", MODE_PRIVATE);
+        String market = preferences.getString("market", "Kucoin");
+        goc = preferences.getString("goc", "ACT");
+        moi = preferences.getString("moi", "BCH");
+
+        txtMarket.setText(market);
+        txtBase.setText(goc + " / " + moi);
     }
 
 
-    // ====================
-    // Get selected items
-    // ====================
-    private Market getSelectedMarket() {
+    private Market getSelectedMarket(String marketName) {
         int size = MarketsConfig.MARKETS.size();
-        int idx = (size - 1) - marketSpinner.getSelectedItemPosition();
+//        int idx = (size - 1) - marketSpinner.getSelectedItemPosition();
+        int idx = (size - 1) - listMarket.indexOf(marketName);
         return MarketsConfigUtils.getMarketById(idx);
     }
 
-    private String getSelectedCurrencyBase() {
-        if (currencyBaseSpinner.getAdapter() == null)
-            return null;
-        return String.valueOf(currencyBaseSpinner.getSelectedItem());
-    }
-
-    private String getSelectedCurrencyCounter() {
-        if (currencyCounterSpinner.getAdapter() == null)
-            return null;
-        return String.valueOf(currencyCounterSpinner.getSelectedItem());
-    }
 
     private int getSelectedContractType(Market market) {
         if (market instanceof FuturesMarket) {
             final FuturesMarket futuresMarket = (FuturesMarket) market;
-            int selection = futuresContractTypeSpinner.getSelectedItemPosition();
-            return futuresMarket.contractTypes[selection];
+//            int selection = futuresContractTypeSpinner.getSelectedItemPosition();
+//            return futuresMarket.contractTypes[selection];
         }
         return Futures.CONTRACT_TYPE_WEEKLY;
     }
 
+    public ArrayList<DataInfo> getListFavo() {
+        ArrayList<DataInfo> list = new ArrayList<>();
+        RealmResults<DataInfo> results1 =
+                realm.where(DataInfo.class).findAll();
+
+        for (DataInfo c : results1) {
+            list.add(c);
+
+        }
+        Log.d("zzzz", "size : " + list.size());
+        return list;
+    }
 
     // ====================
     // Refreshing UI
     // ====================
-    private void refreshMarketSpinner() {
+    private void getListMarket() {
         final CharSequence[] entries = new String[MarketsConfig.MARKETS.size()];
         int i = entries.length - 1;
         for (Market market : MarketsConfig.MARKETS.values()) {
             entries[i--] = market.name;
         }
         for (int j = 0; j < entries.length; j++) {
-            listCho.add(entries[j] + "");
+            listMarket.add(entries[j] + "");
         }
-        marketSpinner.setAdapter(new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_dropdown_item, entries));
+
     }
 
-    private void refreshCurrencySpinners(Market market) {
-        refreshCurrencyBaseSpinner(market);
-        refreshCurrencyCounterSpinner(market);
-        refreshDynamicCurrencyPairsView(market);
 
-        final boolean isCurrencyEmpty = getSelectedCurrencyBase() == null || getSelectedCurrencyCounter() == null;
-        currencySpinnersWrapper.setVisibility(isCurrencyEmpty ? View.GONE : View.VISIBLE);
-        dynamicCurrencyPairsWarningView.setVisibility(isCurrencyEmpty ? View.VISIBLE : View.GONE);
-        getResultButton.setVisibility(isCurrencyEmpty ? View.GONE : View.VISIBLE);
-    }
-
-    private void refreshDynamicCurrencyPairsView(Market market) {
-        dynamicCurrencyPairsInfoView.setVisibility(market.getCurrencyPairsUrl(0) != null ? View.VISIBLE : View.GONE);
-    }
-
-    private void refreshCurrencyBaseSpinner(Market market) {
-        final HashMap<String, CharSequence[]> currencyPairs = getProperCurrencyPairs(market);
-        if (currencyPairs != null && currencyPairs.size() > 0) {
-            final CharSequence[] entries = new CharSequence[currencyPairs.size()];
-            int i = 0;
-            for (String currency : currencyPairs.keySet()) {
-                entries[i++] = currency;
-                listCu.add(currency + "");
-            }
-            currencyBaseSpinner.setAdapter(new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_dropdown_item, entries));
-        } else {
-            currencyBaseSpinner.setAdapter(null);
-        }
-    }
-
-    private void refreshCurrencyCounterSpinner(Market market) {
-        final HashMap<String, CharSequence[]> currencyPairs = getProperCurrencyPairs(market);
-        if (currencyPairs != null && currencyPairs.size() > 0) {
-            final String selectedCurrencyBase = getSelectedCurrencyBase();
-            final CharSequence[] entriesmoi = currencyPairs.get(selectedCurrencyBase).clone();
-
-            for (int i = 0; i < entriesmoi.length; i++) {
-                listMoi.add(entriesmoi[i] + "");
-            }
-
-            currencyCounterSpinner.setAdapter(new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_dropdown_item, entriesmoi));
-        } else {
-            currencyCounterSpinner.setAdapter(null);
-        }
-    }
-
-    private void refreshFuturesContractTypeSpinner(Market market) {
-        SpinnerAdapter spinnerAdapter = null;
-        if (market instanceof FuturesMarket) {
-            final FuturesMarket futuresMarket = (FuturesMarket) market;
-            CharSequence[] entries = new CharSequence[futuresMarket.contractTypes.length];
-            for (int i = 0; i < futuresMarket.contractTypes.length; ++i) {
-                int contractType = futuresMarket.contractTypes[i];
-                entries[i] = Futures.getContractTypeShortName(contractType);
-            }
-            spinnerAdapter = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_dropdown_item, entries);
-        }
-        futuresContractTypeSpinner.setAdapter(spinnerAdapter);
-        futuresContractTypeSpinner.setVisibility(spinnerAdapter != null ? View.VISIBLE : View.GONE);
-    }
-
-    private void showResultView(boolean showResultView) {
-        getResultButton.setEnabled(showResultView);
-        progressBar.setVisibility(showResultView ? View.GONE : View.VISIBLE);
-        resultView.setVisibility(showResultView ? View.VISIBLE : View.GONE);
-    }
+//    private void showResultView(boolean showResultView) {
+//        progressBar.setVisibility(showResultView ? View.GONE : View.VISIBLE);
+//        resultView.setVisibility(showResultView ? View.VISIBLE : View.GONE);
+//    }
 
     private HashMap<String, CharSequence[]> getProperCurrencyPairs(Market market) {
         if (currencyPairsMapHelper != null && currencyPairsMapHelper.getCurrencyPairs() != null && currencyPairsMapHelper.getCurrencyPairs().size() > 0)
@@ -271,17 +259,37 @@ public class MainActivity extends AppCompatActivity {
     // ====================
     // Get && display results
     // ====================
-    private void getNewResult() {
-        final Market market = getSelectedMarket();
-        final String currencyBase = getSelectedCurrencyBase();
-        final String currencyCounter = getSelectedCurrencyCounter();
-        final String pairId = currencyPairsMapHelper != null ? currencyPairsMapHelper.getCurrencyPairId(currencyBase, currencyCounter) : null;
+    private void getNewResult(final boolean isWidget) {
+
+
+        SharedPreferences preferences = getSharedPreferences("share", getApplicationContext().MODE_PRIVATE);
+        String market1 = preferences.getString("market", "Kucoin");
+        String goc1 = preferences.getString("goc", "ACT");
+        String moi1 = preferences.getString("moi", "BCH");
+
+        final Market market = getSelectedMarket(market1);
+
+        final String currencyBase = goc1;
+        final String currencyCounter = moi1;
+        Log.d("yyyy", "goc: " + goc1);
+        Log.d("yyyy", "moi: " + moi1);
+        if (currencyBase.equals(null) || currencyCounter.equals(null)) {
+            Toast.makeText(MainActivity.this, "please select value before", Toast.LENGTH_SHORT).show();
+            return;
+        }
+//        final String pairId = currencyPairsMapHelper != null ? currencyPairsMapHelper.getCurrencyPairId(currencyBase, currencyCounter) : null;
+
+        String pairId = goc1 + "-" + moi1;
         final int contractType = getSelectedContractType(market);
         final CheckerInfo checkerInfo = new CheckerInfo(currencyBase, currencyCounter, pairId, contractType);
+
+        Log.d("yyyy", "pair id : " + pairId);
+        Log.d("yyyy", "contractType : " + contractType);
+
         Request<?> request = new CheckerVolleyMainRequest(market, checkerInfo, new ResponseListener<TickerWrapper>() {
             @Override
             public void onResponse(String url, Map<String, String> requestHeaders, NetworkResponse networkResponse, String responseString, TickerWrapper tickerWrapper) {
-                handleNewResult(checkerInfo, tickerWrapper.ticker, url, requestHeaders, networkResponse, responseString, null, null);
+                handleNewResult(isWidget, checkerInfo, tickerWrapper.ticker, url, requestHeaders, networkResponse, responseString, null, null);
             }
         }, new ResponseErrorListener() {
             @Override
@@ -296,15 +304,15 @@ public class MainActivity extends AppCompatActivity {
                 if (TextUtils.isEmpty(errorMsg))
                     errorMsg = CheckErrorsUtils.parseVolleyErrorMsg(MainActivity.this, error);
 
-                handleNewResult(checkerInfo, null, url, requestHeaders, networkResponse, responseString, errorMsg, error);
+                handleNewResult(isWidget, checkerInfo, null, url, requestHeaders, networkResponse, responseString, errorMsg, error);
             }
         });
         requestQueue.add(request);
-        showResultView(false);
+//        showResultView(false);
     }
 
-    private void handleNewResult(CheckerInfo checkerInfo, Ticker ticker, String url, Map<String, String> requestHeaders, NetworkResponse networkResponse, String rawResponse, String errorMsg, VolleyError error) {
-        showResultView(true);
+    private void handleNewResult(boolean isWidget, CheckerInfo checkerInfo, Ticker ticker, String url, Map<String, String> requestHeaders, NetworkResponse networkResponse, String rawResponse, String errorMsg, VolleyError error) {
+//        showResultView(true);
         SpannableStringBuilder ssb = new SpannableStringBuilder();
 
         if (ticker != null) {
@@ -322,21 +330,41 @@ public class MainActivity extends AppCompatActivity {
         CheckErrorsUtils.formatResponseDebug(this, ssb, url, requestHeaders, networkResponse, rawResponse, error);
 
 
-        String base = currencyCounterSpinner.getSelectedItem().toString();
+        String x = (ssb + "").trim();
+//        Log.d("yyyy", "data: " + ssb);
+        int vt = 0;
+        for (int i = 0; ; i++) {
+            if (x.charAt(i) == ' ') {
+                vt = i;
+                break;
+            }
+        }
 
-        String x = ssb + "";
-        String price1 = x.substring(6, x.indexOf(base)).trim();
+        x = x.substring(6, x.length()).trim();
+
+
+        String price1 = x.substring(0, x.indexOf(" ")).trim();
         price1 = price1.replace(",", ".");
 
+        Log.d("yyyy", "price : " + price1);
 
-        TextView txtCount = (TextView) findViewById(R.id.txt_count);
 
+        try {
+            String tmp = edtCount.getText().toString().trim().replaceAll(",", ".");
+            double count = Double.parseDouble(tmp);
+            double z = Double.parseDouble(price1.trim()) * count;
+            Log.d("yyyy", "z : " + z);
+            if (!isWidget) {
+                txtResult.setText(String.format("%.10f", z));
+            } else {
+//                setDataWidget(String.format("%.10f", z));
+            }
 
-//		resultView.setText(ssb);
-        double z = Double.parseDouble(price1) * Double.parseDouble(txtCount.getText().toString());
-        Log.d("xxxx", "price : " + z);
+        } catch (Exception e) {
+            Toast.makeText(MainActivity.this, "please check count again", Toast.LENGTH_LONG).show();
+            return;
+        }
 
-        resultView.setText(String.format("%.10f", z));
 
     }
 
@@ -360,56 +388,84 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.setting:
+                txtResult.setText("");
                 Intent i = new Intent(MainActivity.this, SettingActivity.class);
                 startActivity(i);
+                return true;
+            case R.id.fav:
+                setFavoClick();
                 return true;
 
         }
         return false;
     }
 
-    String cho;
-    String goc;
-    String moi;
+    private void setFavoClick() {
+        String market = txtMarket.getText().toString();
+        String xgoc = goc;
+        String xmoi = moi;
 
-    public void oldvalue() {
-        SharedPreferences sharedPreferences = getSharedPreferences("share", MODE_PRIVATE);
 
-        cho = sharedPreferences.getString("cho", "Kucoin");
-        goc = sharedPreferences.getString("goc", "ACT");
-        moi = sharedPreferences.getString("moi", "BTC");
+        realm.beginTransaction();
+        DataInfo dataInfo = new DataInfo();
+        dataInfo.setMarket(market);
+        dataInfo.setMoi(xmoi);
+        dataInfo.setGoc(xgoc);
+        DataInfo df = realm.copyToRealm(dataInfo);
 
-        currencyBaseSpinner.setSelection(listCu.indexOf(goc));
-        currencyCounterSpinner.setSelection(listMoi.indexOf(moi));
-        marketSpinner.setSelection(listCu.indexOf(cho));
+        realm.commitTransaction();
+
+        listFavo.add(dataInfo);
+        favoAdapter.setLisData(listFavo);
+        favoAdapter.notifyDataSetChanged();
+
+        Toast.makeText(MainActivity.this, "favorire done", Toast.LENGTH_SHORT).show();
+
 
     }
 
 
-    public void setDataWidget(String s) {
+    public void setDataWidget(Context context) {
+        Log.d("yyyy", "setdat widget");
 
         // Getting an instance of WidgetManager
-        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getApplicationContext());
 
+        final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        final ComponentName thisWidget = new ComponentName(context, AppWidget.class);
         // Instantiating the class RemoteViews with widget_layout
-        RemoteViews views = new RemoteViews(getApplicationContext().getPackageName(), R.layout.layout_widget);
+        final RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.layout_widget);
 
 
-        // Setting the background color of the widget
-//        views.setTextViewText(R.id.txt_market, goc + " / " + moi);
+        SharedPreferences preferences = context.getSharedPreferences("share", MODE_PRIVATE);
+        String market = preferences.getString("market", "Kucoin");
+        String goc1 = preferences.getString("goc", "ACT");
+        String moi1 = preferences.getString("moi", "BCH");
 
-        views.setTextViewText(R.id.txt_market, goc + " / " + moi);
-        views.setTextViewText(R.id.txt_price, s + "");
+        views.setTextViewText(R.id.txt_goc_moi, goc1 + " / " + moi1);
 
-        Intent intent = new Intent(getApplicationContext(), MyReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        views.setTextViewText(R.id.txt_market, market);
+
+        new GetPrice(context) {
+            @Override
+            public void result(Double result) {
+                Log.d("vvvv", "result : " + result);
+
+                views.setTextViewText(R.id.txt_price, String.format("%.10f", result));
+                appWidgetManager.updateAppWidget(thisWidget, views);
+                Log.d("vvvv", "after");
+            }
+        }.getNewResult();
+
+
+        Intent intent = new Intent(context, MyReceiver.class);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
 
         views.setOnClickPendingIntent(R.id.imgbtn_refret, pendingIntent);
 
-        ComponentName thisWidget = new ComponentName(getApplication(), AppWidget.class);
-        //  Attach an on-click listener to the clock
-//        views.setOnClickPendingIntent(R.id.widget_aclock, pendingIntent);
+
+
 
         // Tell the AppWidgetManager to perform an update on the app widget
         appWidgetManager.updateAppWidget(thisWidget, views);
@@ -424,14 +480,10 @@ public class MainActivity extends AppCompatActivity {
             Log.d("zzzz", "receiver");
 
 
-            SharedPreferences sharedPreferences = context.getSharedPreferences("share", MODE_PRIVATE);
-
-            String cho = sharedPreferences.getString("cho", "Kucoin");
-            String goc = sharedPreferences.getString("goc", "ACT");
-            String moi = sharedPreferences.getString("moi", "BTC");
-
+            new MainActivity().setDataWidget(context);
 
         }
     }
+
 
 }

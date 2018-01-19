@@ -34,7 +34,7 @@ public abstract class DynamicCurrencyPairsDialog extends AlertDialog implements 
 	private TextView statusView;
 	private TextView errorView;
 	
-	protected DynamicCurrencyPairsDialog(Context context, Market market, CurrencyPairsMapHelper currencyPairsMapHelper) {
+	public DynamicCurrencyPairsDialog(Context context, Market market, CurrencyPairsMapHelper currencyPairsMapHelper) {
 		super(context);
 		setInverseBackgroundForced(true);
 		
@@ -66,7 +66,7 @@ public abstract class DynamicCurrencyPairsDialog extends AlertDialog implements 
 		currencyPairsMapHelper = null;
 	}
 	
-	private void startRefreshing() {
+	public void startRefreshing() {
 		setCancelable(false);
 		startRefreshingAnim();
 		DynamicCurrencyPairsVolleyMainRequest request = new DynamicCurrencyPairsVolleyMainRequest(getContext(), market,

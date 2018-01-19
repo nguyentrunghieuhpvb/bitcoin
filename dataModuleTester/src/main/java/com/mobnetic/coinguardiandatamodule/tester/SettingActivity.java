@@ -1,11 +1,19 @@
 package com.mobnetic.coinguardiandatamodule.tester;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -16,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -40,10 +49,6 @@ import com.mobnetic.coinguardiandatamodule.tester.volley.CheckerVolleyMainReques
 import com.mobnetic.coinguardiandatamodule.tester.volley.generic.ResponseErrorListener;
 import com.mobnetic.coinguardiandatamodule.tester.volley.generic.ResponseListener;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 public class SettingActivity extends Activity {
 
     private RequestQueue requestQueue;
@@ -53,10 +58,10 @@ public class SettingActivity extends Activity {
     private View dynamicCurrencyPairsInfoView;
     private Spinner currencyBaseSpinner;
     private Spinner currencyCounterSpinner;
-    private Spinner futuresContractTypeSpinner;
-    private View getResultButton;
-    private ProgressBar progressBar;
-    private TextView resultView;
+//    private Spinner futuresContractTypeSpinner;
+//    private View getResultButton;
+//    private ProgressBar progressBar;
+//    private TextView resultView;
 
     private CurrencyPairsMapHelper currencyPairsMapHelper;
 
@@ -81,10 +86,10 @@ public class SettingActivity extends Activity {
         dynamicCurrencyPairsInfoView = findViewById(R.id.dynamicCurrencyPairsInfoView);
         currencyBaseSpinner = (Spinner) findViewById(R.id.currencyBaseSpinner);
         currencyCounterSpinner = (Spinner) findViewById(R.id.currencyCounterSpinner);
-        futuresContractTypeSpinner = (Spinner) findViewById(R.id.futuresContractTypeSpinner);
-        getResultButton = findViewById(R.id.getResultButton);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        resultView = (TextView) findViewById(R.id.resultView);
+//        futuresContractTypeSpinner = (Spinner) findViewById(R.id.futuresContractTypeSpinner);
+//        getResultButton = findViewById(R.id.getResultButton);
+//        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+//        resultView = (TextView) findViewById(R.id.resultView);
 
 
         refreshMarketSpinner();
@@ -93,9 +98,7 @@ public class SettingActivity extends Activity {
         currencyPairsMapHelper = new CurrencyPairsMapHelper(MarketCurrencyPairsStore.getPairsForMarket(this, getSelectedMarket().key));
         refreshCurrencySpinners(market);
         refreshFuturesContractTypeSpinner(market);
-        showResultView(true);
 
-        oldvalue();
 
         marketSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
@@ -110,7 +113,7 @@ public class SettingActivity extends Activity {
             }
         });
 
-        dynamicCurrencyPairsInfoView.setOnClickListener(new OnClickListener() {
+        dynamicCurrencyPairsInfoView.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 new DynamicCurrencyPairsDialog(SettingActivity.this, getSelectedMarket(), currencyPairsMapHelper) {
                     public void onPairsUpdated(Market market, CurrencyPairsMapHelper currencyPairsMapHelper) {
@@ -131,11 +134,11 @@ public class SettingActivity extends Activity {
             }
         });
 
-        getResultButton.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                getNewResult();
-            }
-        });
+//        getResultButton.setOnClickListener(new OnClickListener() {
+//            public void onClick(View v) {
+//                getNewResult();
+//            }
+//        });
 
         Button btnSave = (Button) findViewById(R.id.btn_save);
         btnSave.setOnClickListener(new OnClickListener() {
@@ -143,10 +146,11 @@ public class SettingActivity extends Activity {
             public void onClick(View view) {
                 SharedPreferences sharedPreferences = getSharedPreferences("share", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString("cho", marketSpinner.getSelectedItem().toString());
+                editor.putString("market", marketSpinner.getSelectedItem().toString());
                 editor.putString("goc", currencyBaseSpinner.getSelectedItem().toString());
                 editor.putString("moi", currencyCounterSpinner.getSelectedItem().toString());
                 editor.commit();
+                new MainActivity().setDataWidget(SettingActivity.this);
             }
         });
     }
@@ -171,15 +175,6 @@ public class SettingActivity extends Activity {
         if (currencyCounterSpinner.getAdapter() == null)
             return null;
         return String.valueOf(currencyCounterSpinner.getSelectedItem());
-    }
-
-    private int getSelectedContractType(Market market) {
-        if (market instanceof FuturesMarket) {
-            final FuturesMarket futuresMarket = (FuturesMarket) market;
-            int selection = futuresContractTypeSpinner.getSelectedItemPosition();
-            return futuresMarket.contractTypes[selection];
-        }
-        return Futures.CONTRACT_TYPE_WEEKLY;
     }
 
 
@@ -208,7 +203,7 @@ public class SettingActivity extends Activity {
         final boolean isCurrencyEmpty = getSelectedCurrencyBase() == null || getSelectedCurrencyCounter() == null;
         currencySpinnersWrapper.setVisibility(isCurrencyEmpty ? View.GONE : View.VISIBLE);
         dynamicCurrencyPairsWarningView.setVisibility(isCurrencyEmpty ? View.VISIBLE : View.GONE);
-        getResultButton.setVisibility(isCurrencyEmpty ? View.GONE : View.VISIBLE);
+
     }
 
 
@@ -263,15 +258,14 @@ public class SettingActivity extends Activity {
             }
             spinnerAdapter = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_dropdown_item, entries);
         }
-        futuresContractTypeSpinner.setAdapter(spinnerAdapter);
-        futuresContractTypeSpinner.setVisibility(spinnerAdapter != null ? View.VISIBLE : View.GONE);
+
     }
 
-    private void showResultView(boolean showResultView) {
-        getResultButton.setEnabled(showResultView);
-        progressBar.setVisibility(showResultView ? View.GONE : View.VISIBLE);
-        resultView.setVisibility(showResultView ? View.VISIBLE : View.GONE);
-    }
+//    private void showResultView(boolean showResultView) {
+//        getResultButton.setEnabled(showResultView);
+//        progressBar.setVisibility(showResultView ? View.GONE : View.VISIBLE);
+//        resultView.setVisibility(showResultView ? View.VISIBLE : View.GONE);
+//    }
 
     private HashMap<String, CharSequence[]> getProperCurrencyPairs(Market market) {
         if (currencyPairsMapHelper != null && currencyPairsMapHelper.getCurrencyPairs() != null && currencyPairsMapHelper.getCurrencyPairs().size() > 0)
@@ -283,75 +277,8 @@ public class SettingActivity extends Activity {
     // ====================
     // Get && display results
     // ====================
-    private void getNewResult() {
-        final Market market = getSelectedMarket();
-        final String currencyBase = getSelectedCurrencyBase();
-        final String currencyCounter = getSelectedCurrencyCounter();
-        final String pairId = currencyPairsMapHelper != null ? currencyPairsMapHelper.getCurrencyPairId(currencyBase, currencyCounter) : null;
-        final int contractType = getSelectedContractType(market);
-        final CheckerInfo checkerInfo = new CheckerInfo(currencyBase, currencyCounter, pairId, contractType);
-        Request<?> request = new CheckerVolleyMainRequest(market, checkerInfo, new ResponseListener<TickerWrapper>() {
-            @Override
-            public void onResponse(String url, Map<String, String> requestHeaders, NetworkResponse networkResponse, String responseString, TickerWrapper tickerWrapper) {
-                handleNewResult(checkerInfo, tickerWrapper.ticker, url, requestHeaders, networkResponse, responseString, null, null);
-            }
-        }, new ResponseErrorListener() {
-            @Override
-            public void onErrorResponse(String url, Map<String, String> requestHeaders, NetworkResponse networkResponse, String responseString, VolleyError error) {
-                error.printStackTrace();
+//
 
-                String errorMsg = null;
-                if (error instanceof CheckerErrorParsedError) {
-                    errorMsg = ((CheckerErrorParsedError) error).getErrorMsg();
-                }
-
-                if (TextUtils.isEmpty(errorMsg))
-                    errorMsg = CheckErrorsUtils.parseVolleyErrorMsg(SettingActivity.this, error);
-
-                handleNewResult(checkerInfo, null, url, requestHeaders, networkResponse, responseString, errorMsg, error);
-            }
-        });
-        requestQueue.add(request);
-        showResultView(false);
-    }
-
-    private void handleNewResult(CheckerInfo checkerInfo, Ticker ticker, String url, Map<String, String> requestHeaders, NetworkResponse networkResponse, String rawResponse, String errorMsg, VolleyError error) {
-        showResultView(true);
-        SpannableStringBuilder ssb = new SpannableStringBuilder();
-
-        if (ticker != null) {
-            ssb.append(getString(R.string.ticker_last, FormatUtilsBase.formatPriceWithCurrency(ticker.last, checkerInfo.getCurrencyCounter())));
-            ssb.append(createNewPriceLineIfNeeded(R.string.ticker_high, ticker.high, checkerInfo.getCurrencyCounter()));
-            ssb.append(createNewPriceLineIfNeeded(R.string.ticker_low, ticker.low, checkerInfo.getCurrencyCounter()));
-            ssb.append(createNewPriceLineIfNeeded(R.string.ticker_bid, ticker.bid, checkerInfo.getCurrencyCounter()));
-            ssb.append(createNewPriceLineIfNeeded(R.string.ticker_ask, ticker.ask, checkerInfo.getCurrencyCounter()));
-            ssb.append(createNewPriceLineIfNeeded(R.string.ticker_vol, ticker.vol, checkerInfo.getCurrencyBase()));
-            ssb.append("\n" + getString(R.string.ticker_timestamp, FormatUtilsBase.formatSameDayTimeOrDate(this, ticker.timestamp)));
-        } else {
-            ssb.append(getString(R.string.check_error_generic_prefix, errorMsg != null ? errorMsg : "UNKNOWN"));
-        }
-
-        CheckErrorsUtils.formatResponseDebug(this, ssb, url, requestHeaders, networkResponse, rawResponse, error);
-
-
-        String base = currencyCounterSpinner.getSelectedItem().toString();
-
-        String x = ssb + "";
-        String price = x.substring(6, x.indexOf(base)).trim();
-        price = price.replace(",", ".");
-
-        Log.d(TAG, "base : " + base);
-        Log.d(TAG, "vt : " + x.indexOf(base));
-        Log.d(TAG, "gia  : " + price);
-
-        TextView txtCount = (TextView) findViewById(R.id.txt_count);
-        Log.d(TAG, "resultView : " + Double.valueOf(price));
-
-
-//		resultView.setText(ssb);
-        double z = Double.parseDouble(price) * Double.parseDouble(txtCount.getText().toString());
-        resultView.setText(String.format("%.10f", z));
-    }
 
     private String createNewPriceLineIfNeeded(int textResId, double price, String currency) {
         if (price <= Ticker.NO_DATA)
