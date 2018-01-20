@@ -30,12 +30,12 @@ public class AppWidget extends AppWidgetProvider {
 
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.layout_widget);
 
-            Intent intent = new Intent(context, SettingActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-            PendingIntent pendingIntent1 = PendingIntent.getBroadcast(context, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-            views.setOnClickPendingIntent(R.id.layout_widget, pendingIntent1);
+//            Intent intent = new Intent(context, SettingActivity.class);
+//            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//
+//            PendingIntent pendingIntent1 = PendingIntent.getBroadcast(context, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+//
+//            views.setOnClickPendingIntent(R.id.layout_widget, pendingIntent1);
 
             appWidgetManager.updateAppWidget(currentWidgetId, views);
 

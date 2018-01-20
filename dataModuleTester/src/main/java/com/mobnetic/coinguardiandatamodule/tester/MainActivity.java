@@ -1,9 +1,18 @@
 package com.mobnetic.coinguardiandatamodule.tester;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
@@ -11,6 +20,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -46,6 +57,8 @@ import com.mobnetic.coinguardian.model.Ticker;
 import com.mobnetic.coinguardian.util.CurrencyPairsMapHelper;
 import com.mobnetic.coinguardian.util.FormatUtilsBase;
 import com.mobnetic.coinguardian.util.MarketsConfigUtils;
+import com.mobnetic.coinguardiandatamodule.tester.geticon.Coin;
+import com.mobnetic.coinguardiandatamodule.tester.geticon.ParseJson;
 import com.mobnetic.coinguardiandatamodule.tester.util.CheckErrorsUtils;
 import com.mobnetic.coinguardiandatamodule.tester.util.HttpsHelper;
 import com.mobnetic.coinguardiandatamodule.tester.util.MarketCurrencyPairsStore;
@@ -102,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         inIt();
         getListMarket();
 
-        setDataWidget(MainActivity.this);
+//        setDataWidget(MainActivity.this);
 
         Realm.init(this);
 
@@ -150,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
 
                         @Override
                         public void result(Double result) {
-                            txtResult.setText(String.format("%.10f", result * tmp));
+                            txtResult.setText(String.format("%.8f", result * tmp));
                         }
                     }.getNewResult();
 
@@ -195,6 +208,8 @@ public class MainActivity extends AppCompatActivity {
 
         txtMarket.setText(market);
         txtBase.setText(goc + " / " + moi);
+
+        setDataWidget(MainActivity.this);
     }
 
 
@@ -355,7 +370,7 @@ public class MainActivity extends AppCompatActivity {
             double z = Double.parseDouble(price1.trim()) * count;
             Log.d("yyyy", "z : " + z);
             if (!isWidget) {
-                txtResult.setText(String.format("%.10f", z));
+                txtResult.setText(String.format("%.8f", z));
             } else {
 //                setDataWidget(String.format("%.10f", z));
             }
@@ -400,6 +415,7 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
+
     private void setFavoClick() {
         String market = txtMarket.getText().toString();
         String xgoc = goc;
@@ -425,7 +441,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void setDataWidget(Context context) {
+    public void setDataWidget(final Context context) {
         Log.d("yyyy", "setdat widget");
 
         // Getting an instance of WidgetManager
@@ -441,16 +457,20 @@ public class MainActivity extends AppCompatActivity {
         String goc1 = preferences.getString("goc", "ACT");
         String moi1 = preferences.getString("moi", "BCH");
 
-        views.setTextViewText(R.id.txt_goc_moi, goc1 + " / " + moi1);
 
-        views.setTextViewText(R.id.txt_market, market);
+        final String url = "https://www.cryptocompare.com/api/data/coinlist/";
+
+
+        views.setTextViewText(R.id.txt_goc_moi, market + " : " + goc1 + " / " + moi1);
+
+//        views.setTextViewText(R.id.txt_market, market);
 
         new GetPrice(context) {
             @Override
             public void result(Double result) {
                 Log.d("vvvv", "result : " + result);
 
-                views.setTextViewText(R.id.txt_price, String.format("%.10f", result));
+                views.setTextViewText(R.id.txt_price, String.format("%.8f", result));
                 appWidgetManager.updateAppWidget(thisWidget, views);
                 Log.d("vvvv", "after");
             }
@@ -458,17 +478,41 @@ public class MainActivity extends AppCompatActivity {
 
 
         Intent intent = new Intent(context, MyReceiver.class);
+        intent.setAction("refret");
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-
         views.setOnClickPendingIntent(R.id.imgbtn_refret, pendingIntent);
 
+        Intent i = new Intent(context, MyReceiver.class);
+        i.setAction("setting");
+
+        PendingIntent pendingIntent1 = PendingIntent.getBroadcast(context, 1, i, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        views.setOnClickPendingIntent(R.id.layout_widget, pendingIntent1);
 
 
-
-        // Tell the AppWidgetManager to perform an update on the app widget
         appWidgetManager.updateAppWidget(thisWidget, views);
+
+        new ParseJson(this, url, goc1, new ParseJson.MyCallBack() {
+            @Override
+            public void success(Coin coin) {
+
+                final String coinUrl = "https://www.cryptocompare.com" + coin.getUrl();
+                Log.d("aaaa", "icon url : " + coinUrl);
+
+                new Thread() {
+                    public void run() {
+                        Bitmap img = getBitmapFromUrl(context, coinUrl);
+
+                        views.setImageViewBitmap(R.id.img_icon, img);
+                        appWidgetManager.updateAppWidget(thisWidget, views);
+                    }
+                }.start();
+
+
+            }
+        }).getCoin();
 
 
     }
@@ -479,9 +523,27 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             Log.d("zzzz", "receiver");
 
+            if (intent.getAction().equals("setting")) {
+                Log.d("zzzz", "setting");
+                Intent i = new Intent(context, SettingActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(i);
+            } else {
+                Log.d("zzzz", "refret");
+                new MainActivity().setDataWidget(context);
+            }
 
-            new MainActivity().setDataWidget(context);
+        }
+    }
 
+
+    private static Bitmap getBitmapFromUrl(Context context, final String url) {
+        try {
+            Log.d("aaaa", "Downloading image from  url: " + url);
+            return BitmapFactory.decodeStream((InputStream) new java.net.URL(url).getContent());
+        } catch (Exception e) {
+            Log.d("aaaa", "Image cannot be loaded, using default image: " + e);
+            return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher);
         }
     }
 

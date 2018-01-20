@@ -1,21 +1,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.mobnetic.coinguardiandatamodule.tester"
     android:versionCode="8"
-    android:versionName="8" >
+    android:versionName="8">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <uses-sdk
         android:minSdkVersion="9"
         android:targetSdkVersion="18" />
 
     <application
+        android:name=".HelperApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
-        
-        <activity android:name="com.mobnetic.coinguardiandatamodule.tester.MainActivity"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:name="com.mobnetic.coinguardiandatamodule.tester.MainActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,16 +28,22 @@
 
         <activity android:name=".SettingActivity"></activity>
 
-        <receiver android:name=".AppWidget" >
+        <receiver android:name=".AppWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider"
+            <meta-data
+                android:name="android.appwidget.provider"
                 android:resource="@xml/widget" />
         </receiver>
-        <receiver android:name=".MainActivity$MyReceiver">
+        <receiver android:name="com.mobnetic.coinguardiandatamodule.tester.MainActivity$MyReceiver">
+            <intent-filter>
+                <action android:name="setting" />
+                <action android:name="refret" />
+            </intent-filter>
         </receiver>
-        
+
+
     </application>
 
 </manifest>

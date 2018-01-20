@@ -58,10 +58,8 @@ public class SettingActivity extends Activity {
     private View dynamicCurrencyPairsInfoView;
     private Spinner currencyBaseSpinner;
     private Spinner currencyCounterSpinner;
-//    private Spinner futuresContractTypeSpinner;
-//    private View getResultButton;
-//    private ProgressBar progressBar;
-//    private TextView resultView;
+
+    private Spinner timeUpdateSpinner;
 
     private CurrencyPairsMapHelper currencyPairsMapHelper;
 
@@ -86,11 +84,13 @@ public class SettingActivity extends Activity {
         dynamicCurrencyPairsInfoView = findViewById(R.id.dynamicCurrencyPairsInfoView);
         currencyBaseSpinner = (Spinner) findViewById(R.id.currencyBaseSpinner);
         currencyCounterSpinner = (Spinner) findViewById(R.id.currencyCounterSpinner);
-//        futuresContractTypeSpinner = (Spinner) findViewById(R.id.futuresContractTypeSpinner);
-//        getResultButton = findViewById(R.id.getResultButton);
-//        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-//        resultView = (TextView) findViewById(R.id.resultView);
 
+        timeUpdateSpinner = (Spinner) findViewById(R.id.spinner_time_auto_update);
+
+
+        String listTime[] = {"5 minutes", "10 minutes", "15 minutes", "30 minutes", "60 minutes"};
+
+        timeUpdateSpinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, listTime));
 
         refreshMarketSpinner();
 
@@ -146,15 +146,29 @@ public class SettingActivity extends Activity {
             public void onClick(View view) {
                 SharedPreferences sharedPreferences = getSharedPreferences("share", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString("market", marketSpinner.getSelectedItem().toString());
-                editor.putString("goc", currencyBaseSpinner.getSelectedItem().toString());
-                editor.putString("moi", currencyCounterSpinner.getSelectedItem().toString());
-                editor.commit();
-                new MainActivity().setDataWidget(SettingActivity.this);
+
+                try {
+                    editor.putString("market", marketSpinner.getSelectedItem().toString());
+                    editor.putString("goc", currencyBaseSpinner.getSelectedItem().toString());
+                    editor.putString("moi", currencyCounterSpinner.getSelectedItem().toString());
+
+                    editor.commit();
+
+                    onBackPressed();
+
+                } catch (Exception e) {
+
+                }
+
             }
         });
     }
 
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
 
     // ====================
     // Get selected items
