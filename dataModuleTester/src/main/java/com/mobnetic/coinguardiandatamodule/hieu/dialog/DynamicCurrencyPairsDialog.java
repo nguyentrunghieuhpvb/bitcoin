@@ -1,4 +1,4 @@
-package com.mobnetic.coinguardiandatamodule.tester.dialog;
+package com.mobnetic.coinguardiandatamodule.hieu.dialog;
 
 import java.util.Map;
 
@@ -17,12 +17,12 @@ import com.android.volley.VolleyError;
 import com.mobnetic.coinguardian.model.Market;
 import com.mobnetic.coinguardian.util.CurrencyPairsMapHelper;
 import com.mobnetic.coinguardian.util.FormatUtilsBase;
-import com.mobnetic.coinguardiandatamodule.tester.R;
-import com.mobnetic.coinguardiandatamodule.tester.util.CheckErrorsUtils;
-import com.mobnetic.coinguardiandatamodule.tester.util.HttpsHelper;
-import com.mobnetic.coinguardiandatamodule.tester.volley.DynamicCurrencyPairsVolleyMainRequest;
-import com.mobnetic.coinguardiandatamodule.tester.volley.generic.ResponseErrorListener;
-import com.mobnetic.coinguardiandatamodule.tester.volley.generic.ResponseListener;
+import com.mobnetic.coinguardiandatamodule.hieu.R;
+import com.mobnetic.coinguardiandatamodule.hieu.util.CheckErrorsUtils;
+import com.mobnetic.coinguardiandatamodule.hieu.util.HttpsHelper;
+import com.mobnetic.coinguardiandatamodule.hieu.volley.DynamicCurrencyPairsVolleyMainRequest;
+import com.mobnetic.coinguardiandatamodule.hieu.volley.generic.ResponseErrorListener;
+import com.mobnetic.coinguardiandatamodule.hieu.volley.generic.ResponseListener;
 
 public abstract class DynamicCurrencyPairsDialog extends AlertDialog implements OnDismissListener {
 

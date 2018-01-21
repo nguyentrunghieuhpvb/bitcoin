@@ -1,4 +1,4 @@
-package com.mobnetic.coinguardiandatamodule.tester.geticon;
+package com.mobnetic.coinguardiandatamodule.hieu.geticon;
 
 import android.content.Context;
 import android.util.Log;
@@ -9,7 +9,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.mobnetic.coinguardiandatamodule.tester.HelperApplication;
+import com.mobnetic.coinguardiandatamodule.hieu.HelperApplication;
 
 import org.json.JSONException;
 import org.json.JSONObject;

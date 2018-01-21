@@ -1,37 +1,24 @@
-package com.mobnetic.coinguardiandatamodule.tester;
+package com.mobnetic.coinguardiandatamodule.hieu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 
 import android.app.Activity;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.SpannableStringBuilder;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.VolleyError;
 import com.mobnetic.coinguardian.config.MarketsConfig;
-import com.mobnetic.coinguardian.model.CheckerInfo;
 import com.mobnetic.coinguardian.model.Futures;
 import com.mobnetic.coinguardian.model.FuturesMarket;
 import com.mobnetic.coinguardian.model.Market;
@@ -39,15 +26,9 @@ import com.mobnetic.coinguardian.model.Ticker;
 import com.mobnetic.coinguardian.util.CurrencyPairsMapHelper;
 import com.mobnetic.coinguardian.util.FormatUtilsBase;
 import com.mobnetic.coinguardian.util.MarketsConfigUtils;
-import com.mobnetic.coinguardiandatamodule.tester.dialog.DynamicCurrencyPairsDialog;
-import com.mobnetic.coinguardiandatamodule.tester.util.CheckErrorsUtils;
-import com.mobnetic.coinguardiandatamodule.tester.util.HttpsHelper;
-import com.mobnetic.coinguardiandatamodule.tester.util.MarketCurrencyPairsStore;
-import com.mobnetic.coinguardiandatamodule.tester.volley.CheckerErrorParsedError;
-import com.mobnetic.coinguardiandatamodule.tester.volley.CheckerVolleyMainRequest;
-import com.mobnetic.coinguardiandatamodule.tester.volley.CheckerVolleyMainRequest.TickerWrapper;
-import com.mobnetic.coinguardiandatamodule.tester.volley.generic.ResponseErrorListener;
-import com.mobnetic.coinguardiandatamodule.tester.volley.generic.ResponseListener;
+import com.mobnetic.coinguardiandatamodule.hieu.dialog.DynamicCurrencyPairsDialog;
+import com.mobnetic.coinguardiandatamodule.hieu.util.HttpsHelper;
+import com.mobnetic.coinguardiandatamodule.hieu.util.MarketCurrencyPairsStore;
 
 public class SettingActivity extends Activity {
 

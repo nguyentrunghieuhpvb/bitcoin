@@ -1,9 +1,9 @@
-package com.mobnetic.coinguardiandatamodule.tester.volley;
+package com.mobnetic.coinguardiandatamodule.hieu.volley;
 
 import java.util.Map;
 
 import com.android.volley.toolbox.RequestFuture;
-import com.mobnetic.coinguardiandatamodule.tester.volley.generic.GzipVolleyRequest;
+import com.mobnetic.coinguardiandatamodule.hieu.volley.generic.GzipVolleyRequest;
 
 public class DynamicCurrencyPairsVolleyNextRequest extends GzipVolleyRequest<String> {
 

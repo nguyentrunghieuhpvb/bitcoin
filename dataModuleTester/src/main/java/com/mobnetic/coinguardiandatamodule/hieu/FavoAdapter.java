@@ -1,4 +1,4 @@
-package com.mobnetic.coinguardiandatamodule.tester;
+package com.mobnetic.coinguardiandatamodule.hieu;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;

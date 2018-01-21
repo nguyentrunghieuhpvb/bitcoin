@@ -1,4 +1,4 @@
-package com.mobnetic.coinguardiandatamodule.tester.util;
+package com.mobnetic.coinguardiandatamodule.hieu.util;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;

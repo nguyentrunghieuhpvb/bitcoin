@@ -1,4 +1,4 @@
-package com.mobnetic.coinguardiandatamodule.tester;
+package com.mobnetic.coinguardiandatamodule.hieu;
 
 import android.app.Application;
 import android.content.Context;

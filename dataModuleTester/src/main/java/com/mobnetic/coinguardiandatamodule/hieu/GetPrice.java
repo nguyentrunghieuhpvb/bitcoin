@@ -1,4 +1,4 @@
-package com.mobnetic.coinguardiandatamodule.tester;
+package com.mobnetic.coinguardiandatamodule.hieu;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -18,12 +18,12 @@ import com.mobnetic.coinguardian.model.Market;
 import com.mobnetic.coinguardian.model.Ticker;
 import com.mobnetic.coinguardian.util.FormatUtilsBase;
 import com.mobnetic.coinguardian.util.MarketsConfigUtils;
-import com.mobnetic.coinguardiandatamodule.tester.util.CheckErrorsUtils;
-import com.mobnetic.coinguardiandatamodule.tester.util.HttpsHelper;
-import com.mobnetic.coinguardiandatamodule.tester.volley.CheckerErrorParsedError;
-import com.mobnetic.coinguardiandatamodule.tester.volley.CheckerVolleyMainRequest;
-import com.mobnetic.coinguardiandatamodule.tester.volley.generic.ResponseErrorListener;
-import com.mobnetic.coinguardiandatamodule.tester.volley.generic.ResponseListener;
+import com.mobnetic.coinguardiandatamodule.hieu.util.CheckErrorsUtils;
+import com.mobnetic.coinguardiandatamodule.hieu.util.HttpsHelper;
+import com.mobnetic.coinguardiandatamodule.hieu.volley.CheckerErrorParsedError;
+import com.mobnetic.coinguardiandatamodule.hieu.volley.CheckerVolleyMainRequest;
+import com.mobnetic.coinguardiandatamodule.hieu.volley.generic.ResponseErrorListener;
+import com.mobnetic.coinguardiandatamodule.hieu.volley.generic.ResponseListener;
 
 import java.util.ArrayList;
 import java.util.Map;

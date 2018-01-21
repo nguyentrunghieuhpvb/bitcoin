@@ -1,6 +1,5 @@
-package com.mobnetic.coinguardiandatamodule.tester;
+package com.mobnetic.coinguardiandatamodule.hieu;
 
-import io.realm.Realm;
 import io.realm.RealmObject;
 
 /**

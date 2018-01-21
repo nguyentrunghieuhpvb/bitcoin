@@ -1,4 +1,4 @@
-package com.mobnetic.coinguardiandatamodule.tester.util;
+package com.mobnetic.coinguardiandatamodule.hieu.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -14,7 +14,7 @@ import com.android.volley.ParseError;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
-import com.mobnetic.coinguardiandatamodule.tester.R;
+import com.mobnetic.coinguardiandatamodule.hieu.R;
 
 public class CheckErrorsUtils {
 	

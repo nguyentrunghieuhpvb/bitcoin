@@ -1,4 +1,4 @@
-package com.mobnetic.coinguardiandatamodule.tester.volley;
+package com.mobnetic.coinguardiandatamodule.hieu.volley;
 
 import java.util.Map;
 
@@ -11,8 +11,8 @@ import com.android.volley.toolbox.RequestFuture;
 import com.mobnetic.coinguardian.model.CheckerInfo;
 import com.mobnetic.coinguardian.model.Market;
 import com.mobnetic.coinguardian.model.Ticker;
-import com.mobnetic.coinguardiandatamodule.tester.volley.CheckerVolleyMainRequest.TickerWrapper;
-import com.mobnetic.coinguardiandatamodule.tester.volley.generic.GenericCheckerVolleyRequest;
+import com.mobnetic.coinguardiandatamodule.hieu.volley.CheckerVolleyMainRequest.TickerWrapper;
+import com.mobnetic.coinguardiandatamodule.hieu.volley.generic.GenericCheckerVolleyRequest;
 
 public class CheckerVolleyMainRequest extends GenericCheckerVolleyRequest<TickerWrapper> {
 	

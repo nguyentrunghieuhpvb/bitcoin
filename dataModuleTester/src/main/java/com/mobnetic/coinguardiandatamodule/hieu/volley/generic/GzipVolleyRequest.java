@@ -1,4 +1,4 @@
-package com.mobnetic.coinguardiandatamodule.tester.volley.generic;
+package com.mobnetic.coinguardiandatamodule.hieu.volley.generic;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -19,8 +19,8 @@ import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
-import com.mobnetic.coinguardiandatamodule.tester.volley.CheckerErrorParsedError;
-import com.mobnetic.coinguardiandatamodule.tester.volley.UnknownVolleyError;
+import com.mobnetic.coinguardiandatamodule.hieu.volley.CheckerErrorParsedError;
+import com.mobnetic.coinguardiandatamodule.hieu.volley.UnknownVolleyError;
 
 public abstract class GzipVolleyRequest<T> extends Request<T> {
 

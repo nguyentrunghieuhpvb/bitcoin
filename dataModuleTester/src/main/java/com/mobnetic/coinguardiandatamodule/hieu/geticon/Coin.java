@@ -1,4 +1,4 @@
-package com.mobnetic.coinguardiandatamodule.tester.geticon;
+package com.mobnetic.coinguardiandatamodule.hieu.geticon;
 
 /**
  * Created by Nguyen Hung Son on 1/20/2018.

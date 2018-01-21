@@ -1,4 +1,4 @@
-package com.mobnetic.coinguardiandatamodule.tester.util;
+package com.mobnetic.coinguardiandatamodule.hieu.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;

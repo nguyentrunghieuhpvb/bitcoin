@@ -1,10 +1,10 @@
-package com.mobnetic.coinguardiandatamodule.tester.volley;
+package com.mobnetic.coinguardiandatamodule.hieu.volley;
 
 import java.util.Map;
 
 import com.android.volley.toolbox.RequestFuture;
 import com.mobnetic.coinguardian.model.CheckerInfo;
-import com.mobnetic.coinguardiandatamodule.tester.volley.generic.GenericCheckerVolleyRequest;
+import com.mobnetic.coinguardiandatamodule.hieu.volley.generic.GenericCheckerVolleyRequest;
 
 public class CheckerVolleyNextRequest extends GenericCheckerVolleyRequest<String> {
 	

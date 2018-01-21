@@ -1,6 +1,5 @@
-package com.mobnetic.coinguardiandatamodule.tester;
+package com.mobnetic.coinguardiandatamodule.hieu;
 
-import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
@@ -25,17 +24,12 @@ public class AppWidget extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         super.onUpdate(context, appWidgetManager, appWidgetIds);
+
+        new MainActivity().setDataWidget(context);
         for (int i = 0; i < appWidgetIds.length; i++) {
             int currentWidgetId = appWidgetIds[i];
 
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.layout_widget);
-
-//            Intent intent = new Intent(context, SettingActivity.class);
-//            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//
-//            PendingIntent pendingIntent1 = PendingIntent.getBroadcast(context, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-//
-//            views.setOnClickPendingIntent(R.id.layout_widget, pendingIntent1);
 
             appWidgetManager.updateAppWidget(currentWidgetId, views);
 

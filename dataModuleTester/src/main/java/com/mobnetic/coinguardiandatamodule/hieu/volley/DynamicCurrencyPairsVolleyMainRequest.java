@@ -1,4 +1,4 @@
-package com.mobnetic.coinguardiandatamodule.tester.volley;
+package com.mobnetic.coinguardiandatamodule.hieu.volley;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,8 +15,8 @@ import com.mobnetic.coinguardian.model.CurrencyPairInfo;
 import com.mobnetic.coinguardian.model.CurrencyPairsListWithDate;
 import com.mobnetic.coinguardian.model.Market;
 import com.mobnetic.coinguardian.util.CurrencyPairsMapHelper;
-import com.mobnetic.coinguardiandatamodule.tester.util.MarketCurrencyPairsStore;
-import com.mobnetic.coinguardiandatamodule.tester.volley.generic.GzipVolleyRequest;
+import com.mobnetic.coinguardiandatamodule.hieu.util.MarketCurrencyPairsStore;
+import com.mobnetic.coinguardiandatamodule.hieu.volley.generic.GzipVolleyRequest;
 
 public class DynamicCurrencyPairsVolleyMainRequest extends GzipVolleyRequest<CurrencyPairsMapHelper> {
 
